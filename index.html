@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080908">
+<title>VISHU AI</title>
+
+<style>
+:root {
+  --bg: #080908;
+  --panel: #11130f;
+  --panel2: #191c16;
+  --border: #292d25;
+  --text: #f5f6f1;
+  --muted: #929889;
+  --green: #c5ff6b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+button, textarea { font: inherit; }
+button { cursor: pointer; }
+.app { height: 100dvh; display: flex; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 255px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 14px;
+  background: #0b0c0a;
+  border-right: 1px solid var(--border);
+  z-index: 50;
+}
+.brand { display: flex; align-items: center; gap: 11px; padding: 5px 4px 27px; }
+.logo {
+  width: 42px; height: 42px;
+  display: grid; place-items: center;
+  background: var(--green); color: #111;
+  border-radius: 13px; font-size: 23px; font-weight: 950;
+}
+.brand h2 { font-size: 18px; }
+.brand small { display: block; color: var(--muted); font-size: 9px; letter-spacing: 1.5px; margin-top: 4px; }
+.newchat {
+  background: var(--panel2); color: white;
+  border: 1px solid #34392d; border-radius: 10px;
+  padding: 12px; text-align: left; font-size: 12px;
+}
+.section-label {
+  color: #737a6b; font-size: 10px; font-weight: 800;
+  letter-spacing: 1.5px; margin: 24px 8px 10px;
+}
+.nav {
+  padding: 12px 10px; text-align: left;
+  color: #b0b5a9; background: transparent;
+  border: 0; border-radius: 9px; font-size: 12px;
+}
+.nav:hover { background: var(--panel2); }
+.history { flex: 1; overflow-y: auto; }
+.history button {
+  display: block; width: 100%; padding: 10px 8px;
+  border: 0; background: transparent; color: #aeb3a7;
+  text-align: left; font-size: 11px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sidebar-bottom {
+  padding: 13px; border: 1px solid var(--border);
+  background: var(--panel); border-radius: 12px; font-size: 11px;
+}
+.sidebar-bottom p { color: var(--muted); margin-top: 7px; line-height: 1.7; }
+.status { color: var(--green); margin-top: 12px; font-size: 10px; }
+.dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-right: 6px; }
+
+/* MAIN */
+.main { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+.topbar {
+  min-height: 66px; padding: 0 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; border-bottom: 1px solid #20221d;
+}
+.top-left { display: flex; align-items: center; gap: 11px; }
+.menu {
+  width: 38px; height: 38px; border: 1px solid var(--border);
+  border-radius: 10px; background: var(--panel); color: white;
+}
+.top-title { font-size: 13px; font-weight: 800; }
+.top-sub { color: var(--muted); font-size: 10px; margin-top: 4px; }
+.top-pill { border: 1px solid #30362a; border-radius: 30px; padding: 9px 11px; font-size: 9px; color: #c0c8b7; }
+.avatar {
+  display: grid; place-items: center; width: 35px; height: 35px;
+  border-radius: 50%; background: #1b2016;
+  color: var(--green); border: 1px solid #3a4430; font-weight: 800;
+}
+.workspace { flex: 1; min-height: 0; overflow-y: auto; scroll-behavior: smooth; }
+.welcome { max-width: 850px; width: 100%; margin: auto; padding: 35px 25px; }
+.eyebrow {
+  display: inline-block; padding: 9px 12px;
+  border: 1px solid #303a25; border-radius: 30px;
+  background: #12150f; color: var(--green);
+  font-size: 10px; font-weight: 800; letter-spacing: 1px;
+}
+h1 { font-size: clamp(43px, 6vw, 68px); line-height: 1.04; letter-spacing: -3px; margin-top: 25px; }
+.accent { color: var(--green); }
+.description { max-width: 470px; color: var(--muted); font-size: 13px; line-height: 1.9; margin-top: 16px; }
+.suggestions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 30px; }
+.suggestion {
+  text-align: left; min-height: 100px; padding: 15px;
+  background: linear-gradient(145deg, #141611, #0f110e);
+  border: 1px solid var(--border); border-radius: 13px; color: white;
+}
+.suggestion:hover { border-color: #657b48; }
+.suggestion strong { display: block; font-size: 12px; }
+.suggestion p { font-size: 10px; color: var(--muted); margin-top: 7px; line-height: 1.7; }
+
+/* CHAT */
+.messages { max-width: 850px; width: 100%; margin: auto; padding: 25px 24px; }
+.message { display: flex; gap: 12px; margin-bottom: 25px; }
+.message-avatar {
+  flex-shrink: 0; width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 11px; background: #1c2117;
+  color: var(--green); font-weight: 900; font-size: 10px;
+}
+.message-body { flex: 1; min-width: 0; }
+.message-name { font-size: 10px; font-weight: 800; color: #a7aea0; margin: 5px 0 9px; }
+.message-content { font-size: 13px; line-height: 1.9; white-space: pre-wrap; overflow-wrap: anywhere; }
+.copy-button {
+  margin-top: 9px; padding: 6px 9px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 7px; color: #aab0a3; font-size: 10px;
+}
+
+/* COMPOSER */
+.composer-area {
+  padding: 10px 20px max(12px, env(safe-area-inset-bottom));
+  background: linear-gradient(transparent, #080908 10%);
+}
+.composer {
+  position: relative; max-width: 850px; margin: auto;
+  border: 1px solid #363b30; border-radius: 18px;
+  background: #12140f; padding: 13px;
+}
+#prompt {
+  display: block; width: 100%; min-height: 45px; max-height: 160px;
+  resize: none; outline: none; border: 0;
+  background: transparent; color: white;
+  font-size: 14px; line-height: 1.7;
+}
+#prompt::placeholder { color: #777d70; }
+
+/* MODEL SELECTOR */
+.composer-toolbar {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 8px; margin-top: 9px;
+}
+.toolbar-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.icon-button {
+  flex-shrink: 0; width: 38px; height: 38px;
+  border-radius: 11px; border: 1px solid #30342b;
+  background: #191c16; color: #c2c9b8; font-size: 20px;
+}
+.model-wrap { position: relative; min-width: 0; }
+.model-button {
+  max-width: 210px; min-height: 40px; padding: 0 12px;
+  display: flex; align-items: center; gap: 9px;
+  border-radius: 11px; border: 1px solid #39432d;
+  background: #1a2013; color: var(--green);
+  font-size: 12px; font-weight: 700;
+}
+.model-button .model-name {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.model-button .arrow { color: #a6b895; font-size: 11px; }
+.send-button {
+  flex-shrink: 0; width: 42px; height: 42px;
+  border: 0; border-radius: 13px;
+  background: #183b09; color: var(--green);
+  font-size: 24px; font-weight: 900;
+}
+.send-button:disabled { opacity: .5; cursor: wait; }
+.hint { color: #73796c; font-size: 9px; text-align: center; flex: 1; }
+.disclaimer { max-width: 850px; margin: 10px auto 0; text-align: center; color: #6e7468; font-size: 9px; }
+
+/* DROPDOWN */
+.model-dropdown {
+  position: absolute; z-index: 100;
+  bottom: calc(100% + 12px); left: 0;
+  width: min(310px, calc(100vw - 40px));
+  max-height: min(380px, 55dvh); overflow-y: auto;
+  padding: 8px; border: 1px solid #363d2d;
+  border-radius: 16px; background: #141611;
+  box-shadow: 0 18px 60px #000c;
+}
+.dropdown-heading {
+  padding: 10px; color: #818879;
+  font-size: 9px; font-weight: 800; letter-spacing: 1.4px;
+}
+.provider-option {
+  width: 100%; display: flex; align-items: center; gap: 11px;
+  padding: 11px 10px; text-align: left;
+  border: 0; border-radius: 10px;
+  background: transparent; color: white;
+}
+.provider-option:hover, .provider-option.selected { background: #24291e; }
+.provider-icon {
+  width: 36px; height: 36px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: 10px; background: #252a1e;
+  font-size: 17px; color: var(--green);
+}
+.provider-details { flex: 1; min-width: 0; }
+.provider-details strong { display: block; font-size: 12px; }
+.provider-details small { display: block; font-size: 10px; color: var(--muted); margin-top: 4px; }
+.provider-check { color: var(--green); font-size: 15px; }
+
+.hidden { display: none !important; }
+
+@media (min-width: 701px) {
+  .menu { display: none; }
+}
+@media (max-width: 700px) {
+  .sidebar {
+    position: fixed; inset: 0 auto 0 0; height: 100dvh;
+    transform: translateX(-105%); transition: transform .2s;
+  }
+  .sidebar.open { transform: translateX(0); box-shadow: 20px 0 70px #000b; }
+  .topbar { padding: 0 12px; }
+  .top-pill { padding: 8px; font-size: 8px; }
+  .welcome { padding: 7vh 16px 28px; }
+  h1 { font-size: 45px; letter-spacing: -2px; }
+  .suggestions { gap: 8px; }
+  .suggestion { padding: 12px; }
+  .messages { padding: 22px 15px; }
+  .composer-area { padding: 9px 10px max(12px, env(safe-area-inset-bottom)); }
+  .composer { padding: 12px; }
+  .model-button { max-width: 165px; padding: 0 9px; gap: 6px; font-size: 11px; }
+  .icon-button { width: 36px; height: 36px; }
+  .send-button { width: 40px; height: 40px; }
+  .hint { font-size: 8px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo">V</div>
+    <div><h2>VISHU AI</h2><small>INTELLIGENCE REIMAGINED</small></div>
+  </div>
+
+  <button class="newchat" id="newChat">＋ &nbsp; New conversation</button>
+
+  <div class="section-label">WORKSPACE</div>
+  <button class="nav" id="homeBtn">✳ &nbsp; AI Assistant</button>
+  <button class="nav" id="historyBtn">◷ &nbsp; Chat history</button>
+  <button class="nav" id="clearBtn">⌫ &nbsp; Clear history</button>
+
+  <div class="section-label">RECENT CONVERSATIONS</div>
+  <div class="history" id="history"></div>
+
+  <div class="sidebar-bottom">
+    <strong>VISHU INTELLIGENCE</strong>
+    <p>One workspace. Multiple AI providers.</p>
+    <div class="status"><span class="dot"></span><span id="status">Checking backend...</span></div>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div class="top-left">
+      <button class="menu" id="menuBtn">☰</button>
+      <div>
+        <div class="top-title">VISHU AI</div>
+        <div class="top-sub" id="connection">Your intelligence workspace</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px">
+      <div class="top-pill"><span class="dot"></span> INTELLIGENCE</div>
+      <div class="avatar">V</div>
+    </div>
+  </header>
+
+  <section class="workspace" id="workspace">
+    <div class="welcome" id="welcome">
+      <div class="eyebrow">✳ &nbsp; INTELLIGENCE, REIMAGINED</div>
+      <h1>Think without<br><span class="accent">limits.</span></h1>
+      <p class="description">One conversation. Your choice of AI. Explore ideas, build software, learn and solve problems.</p>
+
+      <div class="suggestions">
+        <button class="suggestion" data-prompt="Teach me Python from the beginning with simple examples.">
+          <strong>⌘ &nbsp; Learn to code</strong>
+          <p>Learn, debug and build real projects.</p>
+        </button>
+        <button class="suggestion" data-prompt="Help me build a real AI application step by step.">
+          <strong>✳ &nbsp; Build with AI</strong>
+          <p>Turn an idea into a working product.</p>
+        </button>
+        <button class="suggestion" data-prompt="Explain machine learning with simple examples.">
+          <strong>◉ &nbsp; Explore AI</strong>
+          <p>Understand AI and machine learning.</p>
+        </button>
+        <button class="suggestion" data-prompt="Help me solve this problem step by step.">
+          <strong>⌁ &nbsp; Solve problems</strong>
+          <p>Think through complex questions.</p>
+        </button>
+      </div>
+    </div>
+    <div class="messages hidden" id="messages"></div>
+  </section>
+
+  <footer class="composer-area">
+    <div class="composer">
+      <textarea id="prompt" rows="1" maxlength="12000" placeholder="Ask anything..."></textarea>
+
+      <div class="composer-toolbar">
+        <div class="toolbar-left">
+          <button class="icon-button" id="attach" title="Attach a text file">＋</button>
+
+          <div class="model-wrap">
+            <button class="model-button" id="modelButton" aria-expanded="false" aria-label="Choose AI model">
+              <span id="selectedIcon">✳</span>
+              <span class="model-name" id="selectedName">Auto</span>
+              <span class="arrow">▼</span>
+            </button>
+
+            <div class="model-dropdown hidden" id="modelDropdown">
+              <div class="dropdown-heading">CHOOSE YOUR AI</div>
+              <div id="providerList"></div>
+            </div>
+          </div>
+
+          <button class="icon-button" id="voice" title="Voice input">⌁</button>
+        </div>
+
+        <span class="hint">Choose AI · Type · Send</span>
+        <button class="send-button" id="send" aria-label="Send message">↑</button>
+      </div>
+    </div>
+
+    <div class="disclaimer">AI can make mistakes. Never share secret API keys in chat.</div>
+  </footer>
+</main>
+</div>
+
+<input type="file" id="file" accept=".txt,.md,.csv,.json" hidden>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+
+  /*
+   * These are provider identifiers, not guaranteed model availability.
+   * Your backend must implement each provider you enable.
+   */
+  const providers = [
+    {id:"auto",name:"Auto",icon:"✳",desc:"Automatically choose an available model"},
+    {id:"gemini",name:"Gemini",icon:"✨",desc:"Google AI models"},
+    {id:"claude",name:"Claude",icon:"◉",desc:"Anthropic AI models"},
+    {id:"openai",name:"OpenAI",icon:"◎",desc:"GPT models"},
+    {id:"nvidia",name:"NVIDIA",icon:"◈",desc:"NVIDIA-hosted models"},
+    {id:"groq",name:"Groq",icon:"ϟ",desc:"Fast inference models"},
+    {id:"openrouter",name:"OpenRouter",icon:"🔀",desc:"Supported models from multiple providers"},
+    {id:"mistral",name:"Mistral",icon:"✣",desc:"Mistral AI models"}
+  ];
+
+  let selectedModel = "auto";
+  let busy = false;
+  let attachment = "";
+  let chats = [];
+  let activeChat = null;
+
+  try {
+    chats = JSON.parse(localStorage.getItem("vishu_chats") || "[]");
+    if (!Array.isArray(chats)) chats = [];
+  } catch { chats = []; }
+
+  try {
+    selectedModel = localStorage.getItem("vishu_model") || "auto";
+  } catch {}
+
+  if (!providers.some(p => p.id === selectedModel)) selectedModel = "auto";
+
+  function save() {
+    try {
+      localStorage.setItem("vishu_chats", JSON.stringify(chats));
+      localStorage.setItem("vishu_model", selectedModel);
+    } catch (err) {
+      console.warn("Could not save local chat history.", err);
+    }
+  }
+
+  function currentChat() {
+    return chats.find(c => c.id === activeChat);
+  }
+
+  function newChat() {
+    const c = {
+      id: Date.now().toString() + Math.random().toString(36).slice(2,7),
+      title: "New conversation",
+      messages: []
+    };
+
+    chats.unshift(c);
+    activeChat = c.id;
+    save();
+    render();
+    $("sidebar").classList.remove("open");
+    $("prompt").focus();
+  }
+
+  function renderHistory() {
+    const history = $("history");
+    history.replaceChildren();
+
+    chats.slice(0,50).forEach(c => {
+      const b = document.createElement("button");
+      b.textContent = c.title || "New conversation";
+      b.title = c.title || "New conversation";
+      b.onclick = () => {
+        activeChat = c.id;
+        render();
+        $("sidebar").classList.remove("open");
+      };
+      history.appendChild(b);
+    });
+  }
+
+  function addMessage(m) {
+    const row = document.createElement("div");
+    row.className = "message";
+
+    const av = document.createElement("div");
+    av.className = "message-avatar";
+    av.textContent = m.role === "user" ? "YOU" : "V";
+
+    const body = document.createElement("div");
+    body.className = "message-body";
+
+    const name = document.createElement("div");
+    name.className = "message-name";
+    name.textContent = m.role === "user" ? "YOU" : "VISHU AI";
+
+    const content = document.createElement("div");
+    content.className = "message-content";
+    content.textContent = m.content;
+
+    body.append(name);
+
+    if (m.role === "assistant" && m.model) {
+      const tag = document.createElement("div");
+      tag.style.cssText = "font-size:10px;color:var(--green);margin-bottom:8px";
+      tag.textContent = "✳ " + m.model;
+      body.appendChild(tag);
+    }
+
+    body.appendChild(content);
+
+    if (m.role === "assistant") {
+      const copy = document.createElement("button");
+      copy.className = "copy-button";
+      copy.textContent = "Copy response";
+      copy.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(m.content);
+          copy.textContent = "Copied!";
+        } catch {
+          copy.textContent = "Copy unavailable";
+        }
+      };
+      body.appendChild(copy);
+    }
+
+    row.append(av,body);
+    $("messages").appendChild(row);
+  }
+
+  function render() {
+    renderHistory();
+
+    const c = currentChat();
+    const hasMessages = !!(c && c.messages.length);
+
+    $("welcome").classList.toggle("hidden",hasMessages);
+    $("messages").classList.toggle("hidden",!hasMessages);
+    $("messages").replaceChildren();
+
+    if (c) c.messages.forEach(addMessage);
+
+    $("workspace").scrollTop = $("workspace").scrollHeight;
+  }
+
+  /* MODEL DROPDOWN */
+
+  function renderProviders() {
+    const list = $("providerList");
+    list.replaceChildren();
+
+    providers.forEach(p => {
+      const b = document.createElement("button");
+      b.className = "provider-option" + (selectedModel === p.id ? " selected" : "");
+      b.type = "button";
+
+      const icon = document.createElement("span");
+      icon.className = "provider-icon";
+      icon.textContent = p.icon;
+
+      const details = document.createElement("span");
+      details.className = "provider-details";
+
+      const title = document.createElement("strong");
+      title.textContent = p.name;
+
+      const desc = document.createElement("small");
+      desc.textContent = p.desc;
+
+      details.append(title,desc);
+
+      const check = document.createElement("span");
+      check.className = "provider-check";
+      check.textContent = selectedModel === p.id ? "✓" : "";
+
+      b.append(icon,details,check);
+
+      b.onclick = () => {
+        selectedModel = p.id;
+        save();
+        updateModelButton();
+        renderProviders();
+        closeDropdown();
+      };
+
+      list.appendChild(b);
+    });
+  }
+
+  function updateModelButton() {
+    const p = providers.find(p => p.id === selectedModel) || providers[0];
+    $("selectedIcon").textContent = p.icon;
+    $("selectedName").textContent = p.name;
+    $("modelButton").setAttribute("aria-label","Selected AI: " + p.name);
+  }
+
+  function openDropdown() {
+    renderProviders();
+    $("modelDropdown").classList.remove("hidden");
+    $("modelButton").setAttribute("aria-expanded","true");
+  }
+
+  function closeDropdown() {
+    $("modelDropdown").classList.add("hidden");
+    $("modelButton").setAttribute("aria-expanded","false");
+  }
+
+  $("modelButton").addEventListener("click", e => {
+    e.stopPropagation();
+    if ($("modelDropdown").classList.contains("hidden")) openDropdown();
+    else closeDropdown();
+  });
+
+  document.addEventListener("click", e => {
+    if (!$("modelDropdown").contains(e.target) && !$("modelButton").contains(e.target)) {
+      closeDropdown();
+    }
+  });
+
+  /* SEND MESSAGE */
+
+  async function send() {
+    if (busy) return;
+
+    let prompt = $("prompt").value.trim();
+    if (!prompt) {
+      $("prompt").focus();
+      return;
+    }
+
+    closeDropdown();
+
+    if (attachment) {
+      prompt += "\n\nAttached file contents:\n" + attachment;
+      attachment = "";
+    }
+
+    if (!currentChat()) newChat();
+
+    const c = currentChat();
+    c.messages.push({role:"user",content:prompt,model:selectedModel});
+
+    if (c.title === "New conversation") {
+      c.title = prompt.replace(/\s+/g," ").slice(0,45);
+    }
+
+    $("prompt").value = "";
+    $("prompt").style.height = "45px";
+    save();
+    render();
+
+    busy = true;
+    $("send").disabled = true;
+    $("send").textContent = "…";
+
+    const typing = document.createElement("div");
+    typing.className = "message";
+
+    const av = document.createElement("div");
+    av.className = "message-avatar";
+    av.textContent = "V";
+
+    const body = document.createElement("div");
+    body.className = "message-body";
+
+    const name = document.createElement("div");
+    name.className = "message-name";
+    name.textContent = "VISHU AI";
+
+    const status = document.createElement("div");
+    status.className = "message-content";
+    status.style.color = "var(--green)";
+    status.textContent = "Thinking...";
+
+    body.append(name,status);
+    typing.append(av,body);
+    $("messages").appendChild(typing);
+
+    $("workspace").scrollTop = $("workspace").scrollHeight;
+
+    try {
+      /*
+       * Expected backend:
+       * POST /api/chat
+       * { "message": "...", "model": "gemini" }
+       *
+       * Expected JSON:
+       * { "reply": "...", "model": "Gemini" }
+       */
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          message: prompt,
+          model: selectedModel
+        })
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || "Backend request failed (" + response.status + ").");
+      }
+
+      const reply = data.reply || data.response || data.content;
+
+      if (typeof reply !== "string" || !reply.trim()) {
+        throw new Error("Backend returned no text response.");
+      }
+
+      c.messages.push({
+        role: "assistant",
+        content: reply.trim(),
+        model: data.model || providers.find(p => p.id === selectedModel)?.name || selectedModel
+      });
+
+      $("connection").textContent = "Response received";
+
+    } catch (err) {
+      c.messages.push({
+        role: "assistant",
+        content:
+          "Couldn't get an AI response.\n\n" +
+          err.message +
+          "\n\nPlease check that your backend is running and the selected provider has a valid API integration."
+      });
+    } finally {
+      busy = false;
+      $("send").disabled = false;
+      $("send").textContent = "↑";
+      save();
+      render();
+    }
+  }
+
+  $("send").onclick = send;
+
+  $("prompt").addEventListener("input", () => {
+    const el = $("prompt");
+    el.style.height = "45px";
+    el.style.height = Math.min(el.scrollHeight,160) + "px";
+  });
+
+  $("prompt").addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  });
+
+  $("newChat").onclick = newChat;
+
+  $("homeBtn").onclick = () => {
+    if (!currentChat()) newChat();
+    else render();
+  };
+
+  $("historyBtn").onclick = () => {
+    $("history").scrollIntoView({behavior:"smooth"});
+  };
+
+  $("clearBtn").onclick = () => {
+    if (!confirm("Delete all chat history?")) return;
+    chats = [];
+    activeChat = null;
+    save();
+    render();
+  };
+
+  $("menuBtn").onclick = () => $("sidebar").classList.toggle("open");
+
+  document.querySelectorAll("[data-prompt]").forEach(b => {
+    b.onclick = () => {
+      $("prompt").value = b.dataset.prompt;
+      send();
+    };
+  });
+
+  /* TEXT FILE ATTACHMENT */
+
+  $("attach").onclick = () => $("file").click();
+
+  $("file").onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 200000) {
+      alert("Choose a text file smaller than 200 KB.");
+      e.target.value = "";
+      return;
+    }
+
+    try {
+      attachment = await file.text();
+      $("prompt").placeholder = "File attached. Type your question...";
+    } catch {
+      alert("Unable to read this file.");
+    }
+
+    e.target.value = "";
+  };
+
+  /* VOICE INPUT */
+
+  $("voice").onclick = () => {
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!Recognition) {
+      alert("Voice input is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new Recognition();
+    recognition.lang = "en-IN";
+    recognition.onresult = e => {
+      const el = $("prompt");
+      el.value += (el.value ? " " : "") + e.results[0][0].transcript;
+      el.dispatchEvent(new Event("input"));
+      el.focus();
+    };
+    recognition.onerror = () => alert("Voice input failed. Please try again.");
+    recognition.start();
+  };
+
+  /* OPTIONAL HEALTH CHECK */
+
+  async function checkBackend() {
+    try {
+      const r = await fetch("/api/health");
+      if (!r.ok) throw new Error("Health check failed");
+
+      $("status").textContent = "Backend connected";
+      $("connection").textContent = "AI backend available";
+    } catch {
+      $("status").textContent = "Backend setup required";
+      $("connection").textContent = "Connect the AI backend to begin";
+    }
+  }
+
+  updateModelButton();
+  render();
+  checkBackend();
+})();
+</script>
+</body>
+        </html>
